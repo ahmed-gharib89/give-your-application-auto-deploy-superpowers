@@ -30,7 +30,7 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = $(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
+            SUCCESS=$(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
             --request GET https://api.memstash.io/values/DB_MIGRATION_<< parameters.workflow_id >>)
             if(( $SUCCESS==1 )); 
             then
@@ -296,7 +296,6 @@ jobs:
           command: |
             # your code here
             npm i 
-            npm install typescript@rc
             npm run build 
             aws s3 cp ./frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       # Here's where you will add some code to rollback on failure
