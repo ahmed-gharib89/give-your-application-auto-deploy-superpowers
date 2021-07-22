@@ -289,11 +289,12 @@ jobs:
             https://api.memstash.io/values/backend_url)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            npm run build --prefix frontend
       - run:
           name: Deploy frontend objects
           command: |
             # your code here
+            npm i --prefix frontend
+            npm run build --prefix frontend
             aws s3 cp ./frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
@@ -325,7 +326,7 @@ jobs:
           name: Deploy backend
           command: |
             # your code here
-            ansible-playbook -i ~/inventory.txt ~/project/.circleci/ansible/deploy-server.yaml
+            ansible-playbook -i ~/inventory.txt ~/project/.circleci/ansible/deploy-backend.yaml
       # Here's where you will add some code to rollback on failure  
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
