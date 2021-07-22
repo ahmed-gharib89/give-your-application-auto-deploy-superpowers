@@ -231,17 +231,19 @@ jobs:
   run-migrations:
     docker:
       # Docker image here that supports NodeJS
-      - image: circleci/node:13.8.0
+      - image: sleavely/node-awscli:14.x
     steps:
       # Checkout code from git
       - checkout
       - run:
           name: Run migrations
+          working_directory: ./backend
           command: |
             # Your code here
             npm run migrations > migration_status
       - run:
           name: Send migration results to memstash
+          working_directory: ./backend
           command: |
             # Your code here
             if grep -q "has been executed successfully" migration_status
