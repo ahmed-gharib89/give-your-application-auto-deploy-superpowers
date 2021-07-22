@@ -83,14 +83,9 @@ jobs:
           keys: [frontend-build]
       # Your job code here
       - run:
-          name: Install dependencies
-          command: npm ci --no-progress --prefer-offline
-      - run:
           name: Front-end test
-          environment:
-            NODE_OPTIONS: --max_old_space_size=8192 
           command: |
-            npm i --prefix frontend
+            npm ci --no-progress --prefer-offline --prefix frontend
             npm run test --prefix frontend
 
                 
