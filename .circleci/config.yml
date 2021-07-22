@@ -27,6 +27,7 @@ commands:
       - run:
           name: Revert migrations
           # Add when this will run
+          when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             SUCCESS = $(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
@@ -291,10 +292,12 @@ jobs:
             echo "${API_URL}"
       - run:
           name: Deploy frontend objects
+          working_directory: ./frontend
           command: |
             # your code here
-            npm i --prefix frontend
-            npm run build --prefix frontend
+            npm i 
+            npm install typescript@rc
+            npm run build 
             aws s3 cp ./frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
@@ -326,7 +329,7 @@ jobs:
           name: Deploy backend
           command: |
             # your code here
-            ansible-playbook -i ~/inventory.txt ~/project/.circleci/ansible/deploy-backend.yaml
+            ansible-playbook -i ~/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
