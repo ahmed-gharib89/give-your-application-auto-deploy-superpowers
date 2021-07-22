@@ -83,6 +83,9 @@ jobs:
           keys: [frontend-build]
       # Your job code here
       - run:
+          name: Install dependencies
+          command: npm ci --no-progress --prefer-offline
+      - run:
           name: Front-end test
           environment:
             NODE_OPTIONS: --max_old_space_size=8192 
@@ -414,7 +417,7 @@ workflows:
       - scan-backend:
           requires: [build-backend]
       - scan-frontend:
-          requires: [test-frontend]
+          requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
