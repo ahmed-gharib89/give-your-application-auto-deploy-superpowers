@@ -83,10 +83,14 @@ jobs:
           keys: [frontend-build]
       # Your job code here
       - run:
+          name: Install junit coverage reporter
+          working_directory: ./frontend
+          command: npm install --save-dev jest-junit
+      - run:
           name: Front-end test
+          working_directory: ./frontend
           command: |
-            npm ci --no-progress --prefer-offline --prefix frontend
-            npm run test --prefix frontend
+            npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
 
                 
   test-backend:
