@@ -336,7 +336,7 @@ jobs:
             npm run build 
             mkdir ~/project/.circleci/ansible/roles/deploy/files
             cp ./dist ~/project/.circleci/ansible/roles/deploy/files/dist -r
-            cp ./node_modules ~/project/.circleci/roles/ansible/deploy/files/node_modules -r
+            cp ./node_modules ~/project/.circleci/ansible/roles/deploy/files/node_modules -r
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure  
@@ -446,19 +446,19 @@ jobs:
 workflows:
   default:
     jobs:
-      # - build-frontend
-      # - build-backend
-      # - test-frontend:
-      #     requires: [build-frontend]
-      # - test-backend:
-      #     requires: [build-backend]
-      # - scan-backend:
-      #     requires: [build-backend]
-      # - scan-frontend:
-      #     requires: [build-frontend]
-      # - deploy-infrastructure:
-      #     requires: [scan-backend, scan-frontend, test-backend, test-frontend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       - deploy-infrastructure:
+          requires: [scan-backend, scan-frontend, test-backend, test-frontend]
+      # - deploy-infrastructure:
           filters:
             branches:
               only: [main]
