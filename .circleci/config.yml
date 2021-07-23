@@ -117,7 +117,7 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-          name: test-backend
+          name: Front-end scan
           working_directory: ./frontend
           command: |
               npm i
@@ -131,7 +131,7 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: test-backend
+          name: Back-end scan
           working_directory: ./backend
           command: |
               npm i
