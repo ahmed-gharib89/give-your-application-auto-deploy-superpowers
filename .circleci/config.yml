@@ -186,7 +186,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure  
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   configure-infrastructure:
@@ -218,7 +218,7 @@ jobs:
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure   
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   run-migrations:
@@ -245,7 +245,7 @@ jobs:
               curl -H "Content-Type: text/plain" -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" --request PUT --data "0" https://api.memstash.io/values/migrations-${CIRCLE_WORKFLOW_ID:0:7}
             fi
      # Here's where you will add some code to rollback on failure 
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-frontend:
@@ -281,7 +281,7 @@ jobs:
             ls -l
             aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       # Here's where you will add some code to rollback on failure     
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-backend:
@@ -315,7 +315,7 @@ jobs:
             ls /root/project/backend/
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
@@ -349,7 +349,7 @@ jobs:
             else
               return 1
             fi
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert_migrations
 
@@ -375,7 +375,7 @@ jobs:
                --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure  
       - revert_migrations
-      - destroy_environment:
+      - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cleanup:
