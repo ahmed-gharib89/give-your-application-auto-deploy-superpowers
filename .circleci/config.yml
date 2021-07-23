@@ -362,17 +362,18 @@ jobs:
           name: Get backend url
           command: |
             # your code here
-            export BACKEND_URL=$(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
-            --request GET https://api.memstash.io/values/BACKEND_URL)
+            export backend_url=$(curl -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
+            --request GET https://api.memstash.io/values/backend_url)
       - run:
           name: Backend smoke test.
           command: |
             # your code here
-            curl "${BACKEND_URL}/api/status"
+            echo ${backend_url}
+            curl "${backend_url}/api/status"
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.us-east-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"
             then
             return 1
@@ -404,8 +405,7 @@ jobs:
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yaml \
             --stack-name udapeople-cloudfront-production \
-            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-            --tags project=udapeople
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure  
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
