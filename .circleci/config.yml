@@ -412,6 +412,7 @@ jobs:
   cleanup:
     docker:
       # Docker image here
+      - image: sleavely/node-awscli:14.x
     steps:
       # Checkout code from git
       - checkout
