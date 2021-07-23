@@ -49,7 +49,7 @@ jobs:
           keys: [frontend-build]
       - run:
           name: Build front-end
-          workdir: frontend
+          working_directory: ./frontend
           command: |
             npm i
             npm run build
@@ -67,7 +67,7 @@ jobs:
           keys: [backend-build]
       - run:
           name: Back-end build
-          workdir: backend
+          working_directory: ./backend
           command: |
             npm i
             npm run build
@@ -90,7 +90,7 @@ jobs:
           keys: [frontend-build]
       - run:
           name: test-frontend
-          workdir: frontend
+          working_directory: ./frontend
           command: |
               npm i
               npm run test
@@ -104,7 +104,7 @@ jobs:
           keys: [backend-build]
       - run:
           name: test-backend
-          workdir: backend
+          working_directory: ./backend
           command: |
               npm i
               npm run test
@@ -115,13 +115,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [scan-frontend]
+          keys: [frontend-build]]
       - run:
           name: test-backend
-          workdir: frontend
+          working_directory: ./frontend
           command: |
               npm i
-              npm audit fix --audit-level=critical
+              npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -129,13 +129,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [scan-backend]
+          keys: [backend-build]]
       - run:
           name: test-backend
-          workdir: backend
+          working_directory: ./backend
           command: |
               npm i
-              npm audit fix --audit-level=critical
+              npm audit --audit-level=critical
               
   deploy-infrastructure:
     docker:
@@ -275,7 +275,7 @@ jobs:
             cat frontend/.env
       - run:
           name: Deploy frontend objects
-          workdir: frontend
+          working_dir: ./frontend
           command: |
             npm i
             npm run build
