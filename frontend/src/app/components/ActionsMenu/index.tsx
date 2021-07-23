@@ -53,9 +53,9 @@ export class ActionsMenu extends React.Component<ActionsMenu.Props> {
     this.props.history.push(`/employees/${this.props.employeeId}/edit`);
   }
 
-  goToViewEmployee = () => { };
+  goToViewEmployee = () => {};
 
-  goToArchiveEmployee = () => { };
+  goToArchiveEmployee = () => {};
 
   handleContextMenu = (e: any) => {
     e.preventDefault();
@@ -76,9 +76,8 @@ export class ActionsMenu extends React.Component<ActionsMenu.Props> {
       {
         label: !this.props.isActive ? 'Activate' : 'Deactivate',
         click: () => {
-          this.props.isActive ? this.props.actions.deactivateEmployee(this.props.employeeId) :
-           this.props.actions.activateEmployee(this.props.employeeId);
-          this.props.actions.fetchEmployees();
+          this.props.isActive ? this.props.actions.deactivateEmployee(this.props.employeeId) : this.props.actions.activateEmployee(this.props.employeeId);
+         this.props.actions.fetchEmployees();
         },
       },
     ]);

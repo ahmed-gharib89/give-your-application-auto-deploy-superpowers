@@ -1,39 +1,40 @@
 ---
-  - name: "show remote environment"
-    shell: env
-
-  - name: "copy backend binaries dist folder"
+  - name: install rsync on the ansible controller
+    become: yes
+    connection: local
+    package:
+      name: 
+        - openssh
+        - rsync
+      state: present
+      
+  - name: "move files to server"
     become: yes
     synchronize:
-      src: dist
-      dest: /home/ubuntu/uda_app
+      src: /root/project/backend/dist
+      dest: ./udapeople-circle94
       recursive: true
 
-  - name: "copy node_modules"
+  - name: "move node modules"
     become: yes
     synchronize:
-      src: node_modules
-      dest: /home/ubuntu/uda_app
+      src: /root/project/backend/node_modules
+      dest: ./udapeople-circle94
       recursive: true
 
-  - name: "delete anything that might already be running"
-    become: true
-    command: pm2 delete all
-    ignore_errors: true
-
-  - name: "start server"
+  - name: "run server"
     become: true
     command: pm2 start -f ./main.js
     args:
-      chdir: /home/ubuntu/uda_app/dist
+      chdir: ./udapeople-circle94/dist
     environment:
-      ENVIRONMENT: production
-      TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
-      TYPEORM_MIGRATIONS_DIR: "./migrations"
-      TYPEORM_MIGRATIONS: "./migrations/*.js"
-      TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
-      TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
-      TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
-      TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
-      TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
-      TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+     ENVIRONMENT: production
+     TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
+     TYPEORM_MIGRATIONS_DIR: "./migrations"
+     TYPEORM_MIGRATIONS: "./migrations/*.js"
+     TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
+     TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
+     TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
+     TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
+     TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
+     TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
