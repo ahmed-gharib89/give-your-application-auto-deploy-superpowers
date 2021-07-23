@@ -115,7 +115,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]]
+          keys: [frontend-build]
       - run:
           name: test-backend
           working_directory: ./frontend
