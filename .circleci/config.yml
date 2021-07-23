@@ -1,9 +1,5 @@
 version: 2.1
 
-orbs:
-  slack: circleci/slack@4.4.2
-  aws-cli: circleci/aws-cli@2.0
-
 commands:
   destroy_environment:
     parameters:
@@ -38,27 +34,6 @@ commands:
           when: on_fail
            
 jobs:
-  notify:
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
-      - slack/notify:
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "Notification for the build",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
-          event: always
           
   build-frontend:
     docker:
@@ -73,12 +48,6 @@ jobs:
             cd frontend
             npm i
             npm run build
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -103,12 +72,6 @@ jobs:
           paths:
             - project/backend/dist
             - project/backend/node_modules
-      - slack/notify:
-          event: pass
-          template: success_tagged_deploy_1
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -421,10 +384,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          context: udapeople
-      - build-backend:
-          context: udapeople
+      - build-frontend
+      - build-backend
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
@@ -435,38 +396,22 @@ workflows:
           requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          context:
-            - udapeople
           filters:
             branches:
-              only: [master]
+              only: [main]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-          context:
-            - udapeople
       - run-migrations:
           requires: [configure-infrastructure]
-          context:
-            - udapeople
       - deploy-backend:
           requires:
             - run-migrations
-          context:
-            - udapeople
       - deploy-frontend:
           requires:
             - run-migrations
-          context:
-            - udapeople
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-          context:
-            - udapeople
       - cloudfront-update:
           requires: [smoke-test]
-          context:
-            - udapeople
       - cleanup:
           requires: [cloudfront-update]
-          context:
-            - udapeople
