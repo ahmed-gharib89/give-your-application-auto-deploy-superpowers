@@ -67,4 +67,6 @@ UserInterfaceState.xcuserstate
 node_modules
 
 .env
-dist
+distbackend/migration_status
+configs.yml
+frontend/junit.xml

@@ -39,39 +39,69 @@ commands:
             fi
             
 jobs:
+  install-frontend-dependencies:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: npm install
+          working_directory: ./frontend
+          command: ls -la && npm i
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/node_modules
+
+  install-backend-dependencies:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: npm install
+          working_directory: ./backend
+          command: ls -la && npm i
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/node_modules
+  
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
+      - attach_workspace:
+          at: .
       - run:
           name: Build front-end
+          working_directory: ./frontend
           command: |
             # Your code here
-            npm i --prefix frontend
-            npm run lint --prefix frontend
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
+            npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/dist
 
   build-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-build]
+      - attach_workspace:
+          at: .
       - run:
           name: Back-end build
+          working_directory: ./backend
           command: |
             # Your code here
-            npm i --prefix backend
-            npm run lint --prefix backend
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
+            npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/dist
 
   test-frontend:
     docker:
@@ -80,8 +110,8 @@ jobs:
       # Checkout code from git
       - checkout
       # Restore from cache
-      - restore_cache:
-          keys: [frontend-build]
+      - attach_workspace:
+          at: .
       # Your job code here
       - run:
           name: Install junit coverage reporter
@@ -101,14 +131,14 @@ jobs:
       # Checkout code from git
       - checkout
       # Restore from cache
-      - restore_cache:
-          keys: [backend-build]
+      - attach_workspace:
+          at: .
       # Your job code here
       - run:
           name: Back-end test
+          working_directory: ./backend
           command: |
-            npm i --prefix backend
-            npm run test --prefix backend
+            npm run test
             
   scan-frontend:
     docker:
@@ -118,14 +148,14 @@ jobs:
       # Checkout code from git
       - checkout
       # Restore from cache
-      - restore_cache:
-          keys: [frontend-build]
+      - attach_workspace:
+          at: .
       # Your job code here
       - run:
           name: Front-end scan
+          working_directory: ./frontend
           command: |
-            npm i --prefix frontend
-            npm audit --audit-level=critical --prefix frontend 
+            npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -135,14 +165,14 @@ jobs:
       # Checkout code from git
       - checkout
       # Restore from cache
-      - restore_cache:
-          keys: [backend-build]
+      - attach_workspace:
+          at: .
       # Your job code here
       - run:
           name: Back-end scan
+          working_directory: ./backend
           command: |
-            npm i --prefix backend
-            npm audit --audit-level=critical --prefix backend
+            npm audit --audit-level=critical
 
   deploy-infrastructure:
     docker:
@@ -157,13 +187,14 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
+              --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
             --output text >> ~/project/.circleci/ansible/inventory.txt
             cat ~/project/.circleci/ansible/inventory.txt
       - run:
@@ -184,16 +215,17 @@ jobs:
             aws cloudformation deploy \
             --template-file .circleci/files/frontend.yml \
             --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
-            --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7}
+            --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
+            --tags project=udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: install tar and gzip to be able to presist files to workspace
           command: |
             yum install -y tar
             yum install -y gzip 
       - persist_to_workspace:
-          root: ~/
+          root: .
           paths:
-            - project/.circleci/ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure   
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"   
@@ -210,7 +242,7 @@ jobs:
           fingerprints: ["45:44:e9:b4:35:84:f7:3f:e3:f9:5f:e5:a0:95:2a:b1"]
       # attach workspace
       - attach_workspace:
-          at: ~/
+          at: .
       - run:
           name: Install dependencies
           command: |
@@ -224,9 +256,9 @@ jobs:
           name: Configure server
           command: |
             # Your code here
-            cat  ~/project/.circleci/ansible/inventory.txt
+            cat  .circleci/ansible/inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure    
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"  
@@ -238,12 +270,13 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Run migrations
           working_directory: ./backend
           command: |
             # Your code here
-            npm i
             npm run migrations > migration_status
       - run:
           name: Send migration results to memstash
@@ -278,6 +311,8 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
+      - attach_workspace:
+          at: .
       # - run:
       #     name: Install dependencies
       #     command: |
@@ -297,9 +332,12 @@ jobs:
           working_directory: ./frontend
           command: |
             # your code here
-            npm i 
             npm run build 
-            aws s3 cp ~/project/frontend/dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/dist
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
@@ -318,7 +356,7 @@ jobs:
           fingerprints: ["45:44:e9:b4:35:84:f7:3f:e3:f9:5f:e5:a0:95:2a:b1"]
       # attach workspace
       - attach_workspace:
-          at: ~/
+          at: .
       - run:
           name: Install dependencies
           command: |
@@ -332,7 +370,6 @@ jobs:
           command: |
             # your code here
             cat ~/project/.circleci/ansible/inventory.txt
-            npm i 
             npm run build 
             mkdir ~/project/.circleci/ansible/roles/deploy/files
             cp ./dist ~/project/.circleci/ansible/roles/deploy/files/dist -r
@@ -352,6 +389,8 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: Install dependencies
           command: |
