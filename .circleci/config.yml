@@ -206,6 +206,7 @@ jobs:
           TYPEORM_ENTITIES: $TYPEORM_ENTITIES   
     steps:
       - checkout
+      # Add ssh keys with fingerprint
       - add_ssh_keys:
           fingerprints: ["45:44:e9:b4:35:84:f7:3f:e3:f9:5f:e5:a0:95:2a:b1"]
       - attach_workspace:
@@ -222,6 +223,7 @@ jobs:
           name: Configure server
           command: |
             cat ~/project/.circleci/ansible/inventory.txt
+            export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure   
       - destroy-environment:
