@@ -104,6 +104,7 @@ jobs:
           keys: [backend-build]
       - run:
           name: test-backend
+          workdir: backend
           command: |
               npm i
               npm run test
@@ -120,7 +121,7 @@ jobs:
           workdir: frontend
           command: |
               npm i
-              npm audit --audit-level=critical
+              npm audit fix --audit-level=critical
 
   scan-backend:
     docker:
@@ -134,7 +135,7 @@ jobs:
           workdir: backend
           command: |
               npm i
-              npm audit --audit-level=critical
+              npm audit fix --audit-level=critical
               
   deploy-infrastructure:
     docker:
