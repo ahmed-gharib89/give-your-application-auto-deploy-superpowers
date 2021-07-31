@@ -6,7 +6,7 @@ commands:
     parameters:
       # Add parameter here
       workflow_id:
-        type: string   
+        type: string
     steps:
       - run:
           name: Destroy environments
@@ -20,9 +20,9 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
-      # Add parameter here 
+      # Add parameter here
       workflow_id:
-        type: string      
+        type: string
     steps:
       - run:
           name: Revert migrations
@@ -37,9 +37,8 @@ commands:
             cd backend
             npm run migrations:revert
             fi
-           
+
 jobs:
-          
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -71,8 +70,9 @@ jobs:
           command: |
             npm i
             npm run build
+            cp .env dist/.env
             pwd && ls -al
-      - persist_to_workspace: 
+      - persist_to_workspace:
           root: ~/
           paths:
             - project/backend/dist
@@ -92,9 +92,9 @@ jobs:
           name: test-frontend
           working_directory: ./frontend
           command: |
-              npm i
-              npm run test
-                
+            npm i
+            npm run test
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -106,9 +106,9 @@ jobs:
           name: test-backend
           working_directory: ./backend
           command: |
-              npm i
-              npm run test
-            
+            npm i
+            npm run test
+
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -120,8 +120,8 @@ jobs:
           name: Front-end scan
           working_directory: ./frontend
           command: |
-              npm i
-              npm audit --audit-level=critical
+            npm i
+            npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -134,9 +134,9 @@ jobs:
           name: Back-end scan
           working_directory: ./backend
           command: |
-              npm i
-              npm audit --audit-level=critical
-              
+            npm i
+            npm audit --audit-level=critical
+
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -161,7 +161,7 @@ jobs:
             --template-file .circleci/files/frontend.yml \
             --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
             --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
-            --tags project=udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} 
+            --tags project=udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -186,7 +186,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure  
+      # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
@@ -196,14 +196,14 @@ jobs:
         environment:
           NODE_ENV: "local"
           VERSION: "1"
-          ENVIRONMENT: "production" 
+          ENVIRONMENT: "production"
           TYPEORM_CONNECTION: $TYPEORM_CONNECTION
           TYPEORM_HOST: $TYPEORM_HOST
           TYPEORM_USERNAME: $TYPEORM_USERNAME
           TYPEORM_PASSWORD: $TYPEORM_PASSWORD
           TYPEORM_DATABASE: $TYPEORM_DATABASE
           TYPEORM_PORT: $TYPEORM_PORT
-          TYPEORM_ENTITIES: $TYPEORM_ENTITIES   
+          TYPEORM_ENTITIES: $TYPEORM_ENTITIES
     steps:
       - checkout
       # Add ssh keys with fingerprint
@@ -225,7 +225,7 @@ jobs:
             cat ~/project/.circleci/ansible/inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
-      # Here's where you will add some code to rollback on failure   
+      # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
@@ -255,7 +255,7 @@ jobs:
               echo "has failed"
               curl -H "Content-Type: text/plain" -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" --request PUT --data "0" https://api.memstash.io/values/migrations-${CIRCLE_WORKFLOW_ID:0:7}
             fi
-     # Here's where you will add some code to rollback on failure 
+      # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
@@ -265,7 +265,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: /root 
+          at: /root
       - run:
           name: Get backend url
           command: |
@@ -286,25 +286,24 @@ jobs:
             npm run build
             ls -l
             aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-      # Here's where you will add some code to rollback on failure     
+      # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      
 
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
         environment:
-            NODE_ENV: "local"
-            VERSION: "1"
-            ENVIRONMENT: "production" 
-            TYPEORM_CONNECTION: $TYPEORM_CONNECTION
-            TYPEORM_HOST: $TYPEORM_HOST
-            TYPEORM_USERNAME: $TYPEORM_USERNAME
-            TYPEORM_PASSWORD: $TYPEORM_PASSWORD
-            TYPEORM_DATABASE: $TYPEORM_DATABASE
-            TYPEORM_PORT: $TYPEORM_PORT
-            TYPEORM_ENTITIES: $TYPEORM_ENTITIES
+          NODE_ENV: "local"
+          VERSION: "1"
+          ENVIRONMENT: "production"
+          TYPEORM_CONNECTION: $TYPEORM_CONNECTION
+          TYPEORM_HOST: $TYPEORM_HOST
+          TYPEORM_USERNAME: $TYPEORM_USERNAME
+          TYPEORM_PASSWORD: $TYPEORM_PASSWORD
+          TYPEORM_DATABASE: $TYPEORM_DATABASE
+          TYPEORM_PORT: $TYPEORM_PORT
+          TYPEORM_ENTITIES: $TYPEORM_ENTITIES
     steps:
       - checkout
       - add_ssh_keys:
@@ -330,7 +329,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: python:3.7-alpine3.11 
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - attach_workspace:
@@ -339,7 +338,7 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update curl
-            pip install awscli 
+            pip install awscli
       - run:
           name: Backend smoke test.
           command: |
@@ -384,7 +383,7 @@ jobs:
               --tags project=circleci-${CIRCLE_WORKFLOW_ID:0:7} \
               --stack-name "udapeople-cloudfrontstack" \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
-      # Here's where you will add some code to rollback on failure  
+      # Here's where you will add some code to rollback on failure
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - destroy-environment:
